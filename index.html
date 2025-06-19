@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Công cụ chuyển đổi timestamp sang ngày giờ UTC và giờ Việt Nam">
+  <title>Chuyển Timestamp sang Ngày giờ</title>
+  <style>
+    :root {
+      --primary-color: #4a6fa5;
+      --secondary-color: #166088;
+      --background-color: #f5f7fa;
+      --card-color: #ffffff;
+      --text-color: #333333;
+      --border-radius: 8px;
+      --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: var(--text-color);
+      background-color: var(--background-color);
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .container {
+      background-color: var(--card-color);
+      padding: 25px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+    }
+
+    h1 {
+      color: var(--primary-color);
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 24px;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: var(--border-radius);
+      font-size: 16px;
+      box-sizing: border-box;
+      transition: border-color 0.3s;
+    }
+
+    input:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.2);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: var(--secondary-color);
+    }
+
+    .result {
+      margin-top: 25px;
+      padding: 20px;
+      background-color: var(--card-color);
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      display: none;
+    }
+
+    .result-title {
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: var(--secondary-color);
+      font-size: 18px;
+    }
+
+    .time-result {
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .time-result:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .time-label {
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .time-value {
+      margin-top: 5px;
+      padding-left: 28px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .current-time {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #666;
+      text-align: center;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 15px;
+      }
+      
+      .container {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔢 Chuyển Timestamp sang Ngày giờ</h1>
+    
+    <div class="input-group">
+      <label for="timestampInput">Nhập timestamp (milliseconds):</label>
+      <input type="number" id="timestampInput" placeholder="Ví dụ: 1625097600000">
+    </div>
+    
+    <button onclick="convertTimestamp()">Chuyển đổi</button>
+    
+    <div class="result" id="result">
+      <div class="result-title">Kết quả chuyển đổi</div>
+      
+      <div class="time-result">
+        <div class="time-label">
+          <span>🕓</span>
+          <span>Thời gian UTC:</span>
+        </div>
+        <div class="time-value" id="utcTime"></div>
+      </div>
+      
+      <div class="time-result">
+        <div class="time-label">
+          <span>🇻🇳</span>
+          <span>Giờ Việt Nam (UTC+7):</span>
+        </div>
+        <div class="time-value" id="vnTime"></div>
+      </div>
+    </div>
+    
+    <div class="current-time" id="currentTime"></div>
+  </div>
+
+  <script>
+    // Hiển thị thời gian hiện tại
+    function updateCurrentTime() {
+      const now = new Date();
+      const timestamp = now.getTime();
+      const options = { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        timeZoneName: 'short'
+      };
+      
+      const vnTimeStr = now.toLocaleString('vi-VN', { 
+        ...options, 
+        timeZone: 'Asia/Ho_Chi_Minh' 
+      });
+      
+      document.getElementById('currentTime').textContent = 
+        `Thời gian hiện tại: ${vnTimeStr} | Timestamp: ${timestamp}`;
+    }
+    
+    // Cập nhật thời gian mỗi giây
+    updateCurrentTime();
+    setInterval(updateCurrentTime, 1000);
+
+    // Hàm chuyển đổi timestamp
+    function convertTimestamp() {
+      const input = document.getElementById('timestampInput').value.trim();
+      const ms = parseInt(input);
+      
+      if (!input) {
+        alert("Vui lòng nhập timestamp");
+        return;
+      }
+      
+      if (isNaN(ms)) {
+        alert("Timestamp phải là số nguyên (milliseconds)");
+        return;
+      }
+      
+      try {
+        const utcDate = new Date(ms);
+        const vnDate = new Date(ms + 7 * 60 * 60 * 1000); // UTC+7
+        
+        // Kiểm tra nếu timestamp không hợp lệ
+        if (isNaN(utcDate.getTime())) {
+          throw new Error("Timestamp không hợp lệ");
+        }
+        
+        // Định dạng ngày giờ
+        const formatDateTime = (date) => {
+          return date.toISOString()
+            .replace('T', ' ')
+            .replace(/\.\d+Z/, '')
+            .replace(/-/g, '/');
+        };
+        
+        document.getElementById("utcTime").textContent = formatDateTime(utcDate) + " (UTC)";
+        document.getElementById("vnTime").textContent = formatDateTime(vnDate) + " (UTC+7)";
+        document.getElementById("result").style.display = "block";
+      } catch (error) {
+        alert("Lỗi: " + error.message);
+      }
+    }
+    
+    // Cho phép nhấn Enter để chuyển đổi
+    document.getElementById('timestampInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        convertTimestamp();
+      }
+    });
+  </script>
+</body>
+</html>
